@@ -7,12 +7,16 @@
         <input v-model="username" type="text" required />
       </div>
       <div>
-          <label for="email">Email:</label>
-          <input v-model="email" type="" required />
-        </div>
+        <label for="email">Email:</label>
+        <input v-model="email" type="email" required />
+      </div>
       <div>
         <label for="password">Password:</label>
         <input v-model="password" type="password" required />
+      </div>
+      <div>
+        <span> Don't have an account? </span>
+        <router-link to="/register">Register</router-link>
       </div>
       <button type="submit">Login</button>
       <p v-if="error">{{ error }}</p>
@@ -32,12 +36,22 @@ export default {
   },
   methods: {
     login() {
-      const users = JSON.parse(localStorage.getItem("users")) || {};
-      if (users[this.username] && users[this.username] === this.password) {
-        localStorage.setItem("loggedInUser", this.username);
-        this.$router.push("/tasks");
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+
+      const user = users.find(
+        (u) => u.username === this.username && u.email === this.email
+      );
+
+      if (user) {
+        if (user.password === this.password) {
+          localStorage.setItem("loggedInUser", JSON.stringify(user));
+          this.$router.push("/tasks");
+        } else {
+          this.error = "Invalid password.";
+        }
       } else {
-        this.error = "Invalid username or password.";
+        this.error =
+          "No user found with the given username and email. Please register.";
       }
     },
   },
