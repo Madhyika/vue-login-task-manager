@@ -6,25 +6,13 @@
       </h2>
       <form @submit.prevent="login">
         <div class="mb-4">
-          <label for="username" class="block text-sm text-gray-700 mb-1"
-            >Username:</label
+          <label for="userInput" class="block text-sm text-gray-700 mb-1"
+            >Username/Email:</label
           >
           <input
-            v-model="username"
+            v-model="userInput"
             type="text"
-            id="username"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            required
-          />
-        </div>
-        <div class="mb-4">
-          <label for="email" class="block text-sm text-gray-700 mb-1"
-            >Email:</label
-          >
-          <input
-            v-model="email"
-            type="email"
-            id="email"
+            id="userInput"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
@@ -65,35 +53,27 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/authstore";
+import { ref } from "vue";
+
 export default {
-  data() {
-    return {
-      username: "",
-      email: "",
-      password: "",
-      error: null,
-    };
-  },
-  methods: {
-    login() {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
+  setup() {
+    const authStore = useAuthStore();
+    const router = useRouter();
+    
+    const userInput = ref("");
+    const password = ref("");
+    const error = ref(null);
 
-      const user = users.find(
-        (u) => u.username === this.username && u.email === this.email
-      );
-
-      if (user) {
-        if (user.password === this.password) {
-          localStorage.setItem("loggedInUser", JSON.stringify(user));
-          this.$router.push("/tasks");
-        } else {
-          this.error = "Invalid password.";
-        }
-      } else {
-        this.error =
-          "No user found with the given username and email. Please register.";
+    const login = () => {
+      if (authStore.login(userInput.value, password.value)) {
+        router.push("/tasks");
+      }else {
+        error.value = authStore.error;
       }
-    },
+    };
+    return { userInput, password, error, authStore, login };
   },
 };
 </script>

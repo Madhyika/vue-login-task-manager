@@ -65,38 +65,28 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/authstore";
+import { ref } from "vue";
+
 export default {
-  data() {
-    return {
-      username: "",
-      email: "",
-      password: "",
-      error: null,
-    };
-  },
-  methods: {
-    register() {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
+  setup() {
+    const authStore = useAuthStore();
+    const router = useRouter();
+    const username = ref("");
+    const email = ref("");
+    const password = ref("");
+    const error = ref(null);
 
-      const userExists = users.some(
-        (user) => user.username === this.username || user.email === this.email
-      );
-
-      if (userExists) {
-        this.error = "Username or email already exists.";
+    const register = () => {
+      if (authStore.register(username.value, email.value, password.value)) {
+        router.push("/login");
       } else {
-        const newUser = {
-          username: this.username,
-          email: this.email,
-          password: this.password,
-        };
-        users.push(newUser);
-
-        localStorage.setItem("users", JSON.stringify(users));
-
-        this.$router.push("/login");
+        error.value = authStore.error;
       }
-    },
+    };
+
+    return { username, email, password, error, register };
   },
 };
 </script>
